@@ -2,56 +2,387 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Student Spinner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Student Spinner</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
-      font-family: sans-serif;
-      text-align: center;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 2rem;
-      background: #f4f4f4;
+      color: white;
     }
+    
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
     h1 {
-      font-size: 2rem;
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+      background: linear-gradient(45deg, #fff, #f0f0f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    textarea {
-      width: 80%;
-      height: 100px;
-      margin: 1rem 0;
-      padding: 0.5rem;
+    
+    .subtitle {
+      text-align: center;
+      opacity: 0.8;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
     }
-    #spinner {
-      margin-top: 2rem;
-      font-size: 3rem;
+    
+    .input-section {
+      margin-bottom: 2rem;
+    }
+    
+    .file-upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .file-upload-area:hover {
+      border-color: rgba(255, 255, 255, 0.6);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .file-upload-area.dragover {
+      border-color: #4CAF50;
+      background: rgba(76, 175, 80, 0.1);
+    }
+    
+    #namesInput {
+      width: 100%;
+      height: 120px;
+      padding: 1rem;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 1rem;
+      resize: vertical;
+      margin-bottom: 1rem;
+    }
+    
+    #namesInput::placeholder {
+      color: #666;
+    }
+    
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    
+    .student-count {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
       font-weight: bold;
-      color: #2c3e50;
-      min-height: 3rem;
-      transition: transform 0.4s ease;
     }
-    .spin {
-      animation: spinAnim 0.5s ease;
+    
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
-    @keyframes spinAnim {
-      0% { transform: rotate(0deg); }
-      50% { transform: rotate(15deg); }
-      100% { transform: rotate(0deg); }
+    
+    button {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
-    input[type="file"] {
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .clear-btn {
+      background: linear-gradient(45deg, #f44336, #d32f2f);
+    }
+    
+    .sound-btn {
+      background: linear-gradient(45deg, #FF9800, #F57C00);
+    }
+    
+    .spinner-container {
+      margin: 3rem 0;
+      text-align: center;
+      position: relative;
+    }
+    
+    #spinner {
+      font-size: 3.5rem;
+      font-weight: bold;
+      min-height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(45deg, #fff, #f0f0f0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .spinner-wheel {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      border: 8px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      border-top-color: #4CAF50;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .spinning {
+      animation: bigSpin 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    
+    .spinning .spinner-wheel {
+      opacity: 1;
+      animation: wheelSpin 2s linear;
+    }
+    
+    @keyframes bigSpin {
+      0% { transform: scale(1) rotate(0deg); }
+      25% { transform: scale(1.1) rotate(360deg); }
+      50% { transform: scale(1.05) rotate(720deg); }
+      75% { transform: scale(1.1) rotate(1080deg); }
+      100% { transform: scale(1) rotate(1440deg); }
+    }
+    
+    @keyframes wheelSpin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(1440deg); }
+    }
+    
+    .history {
+      margin-top: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    
+    .history h3 {
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    .history-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    
+    .history-item {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.3rem 0.8rem;
+      border-radius: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .keyboard-hint {
+      text-align: center;
       margin-top: 1rem;
+      opacity: 0.7;
+      font-size: 0.9rem;
+    }
+    
+    .spinning-message {
+      position: absolute;
+      top: -3rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .spinning .spinning-message {
+      opacity: 1;
+      animation: bounce 0.6s ease-in-out infinite alternate;
+    }
+    
+    @keyframes bounce {
+      to { transform: translateX(-50%) translateY(-10px); }
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .container {
+        padding: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      #spinner {
+        font-size: 2.5rem;
+      }
+      
+      .stats {
+        justify-content: center;
+      }
+      
+      .controls {
+        justify-content: center;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>🎯 Student Spinner</h1>
-  <p>Paste or upload names (one per line). Hit <b>Space</b> to spin.</p>
-
-  <textarea id="namesInput" placeholder="e.g. John Doe&#10;Jane Smith"></textarea><br>
-  <input type="file" id="fileInput" accept=".txt"><br>
-
-  <div id="spinner">—</div>
+  <div class="container">
+    <h1>🎯 Student Spinner</h1>
+    <p class="subtitle">Select a random student with style!</p>
+    
+    <div class="input-section">
+      <div class="file-upload-area" id="fileUploadArea">
+        <p>📁 Drop a text file here or click to browse</p>
+        <input type="file" id="fileInput" accept=".txt,.csv" style="display: none;">
+      </div>
+      
+      <textarea 
+        id="namesInput" 
+        placeholder="Enter student names (one per line):&#10;&#10;John Doe&#10;Jane Smith&#10;Mike Johnson&#10;Sarah Wilson"
+      ></textarea>
+    </div>
+    
+    <div class="stats">
+      <div class="student-count" id="studentCount">Students: 0</div>
+      <div class="controls">
+        <button id="spinBtn">🎲 SPIN!</button>
+        <button id="clearBtn" class="clear-btn">🗑️ Clear</button>
+        <button id="soundBtn" class="sound-btn">🔊 Sound</button>
+      </div>
+    </div>
+    
+    <div class="spinner-container">
+      <div class="spinning-message">🎊 Selecting...</div>
+      <div id="spinner">Ready to spin!</div>
+      <div class="spinner-wheel"></div>
+    </div>
+    
+    <div class="keyboard-hint">
+      💡 Press <strong>SPACEBAR</strong> to spin quickly!
+    </div>
+    
+    <div class="history" id="historySection" style="display: none;">
+      <h3>📝 Recently Selected</h3>
+      <div class="history-list" id="historyList"></div>
+    </div>
+  </div>
 
   <script>
     let students = [];
-
+    let history = [];
+    let isSpinning = false;
+    let soundEnabled = true;
+    
+    // Audio context for sound effects
+    let audioContext;
+    
+    function initAudio() {
+      if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+    
+    function playSpinSound() {
+      if (!soundEnabled || !audioContext) return;
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    }
+    
+    function playResultSound() {
+      if (!soundEnabled || !audioContext) return;
+      
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(1000, audioContext.currentTime + 0.2);
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + 0.2);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.4);
+    }
+    
     function parseNames(raw) {
       const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
       const counts = {};
@@ -60,53 +391,147 @@
         const first = parts[0];
         const lastInitial = parts[1] ? parts[1][0].toUpperCase() + '.' : '';
         const key = first.toLowerCase();
-
         counts[key] = (counts[key] || 0) + 1;
-
         return { raw: name, first, lastInitial };
       });
-
+      
       return formatted.map(entry => {
         const key = entry.first.toLowerCase();
         return counts[key] > 1 ? `${entry.first} ${entry.lastInitial}` : entry.first;
       });
     }
-
+    
     function updateStudents() {
       const raw = document.getElementById('namesInput').value;
       students = parseNames(raw);
+      updateStudentCount();
     }
-
+    
+    function updateStudentCount() {
+      document.getElementById('studentCount').textContent = `Students: ${students.length}`;
+      document.getElementById('spinBtn').disabled = students.length === 0;
+    }
+    
+    function addToHistory(name) {
+      history.unshift(name);
+      if (history.length > 10) history.pop(); // Keep only last 10
+      updateHistoryDisplay();
+    }
+    
+    function updateHistoryDisplay() {
+      const historySection = document.getElementById('historySection');
+      const historyList = document.getElementById('historyList');
+      
+      if (history.length === 0) {
+        historySection.style.display = 'none';
+        return;
+      }
+      
+      historySection.style.display = 'block';
+      historyList.innerHTML = history.map(name => 
+        `<span class="history-item">${name}</span>`
+      ).join('');
+    }
+    
     function spin() {
-      if (students.length === 0) return;
+      if (students.length === 0 || isSpinning) return;
+      
+      isSpinning = true;
+      initAudio();
+      playSpinSound();
+      
       const spinner = document.getElementById('spinner');
-      const name = students[Math.floor(Math.random() * students.length)];
-      spinner.classList.remove('spin');
-      void spinner.offsetWidth;
-      spinner.textContent = name;
-      spinner.classList.add('spin');
+      const spinBtn = document.getElementById('spinBtn');
+      
+      spinBtn.disabled = true;
+      spinner.classList.add('spinning');
+      
+      // Show spinning message
+      spinner.textContent = '🎲';
+      
+      setTimeout(() => {
+        const selectedName = students[Math.floor(Math.random() * students.length)];
+        spinner.textContent = selectedName;
+        addToHistory(selectedName);
+        playResultSound();
+        
+        spinner.classList.remove('spinning');
+        spinBtn.disabled = false;
+        isSpinning = false;
+      }, 2000);
     }
-
+    
+    function clearAll() {
+      document.getElementById('namesInput').value = '';
+      students = [];
+      history = [];
+      updateStudentCount();
+      updateHistoryDisplay();
+      document.getElementById('spinner').textContent = 'Ready to spin!';
+    }
+    
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const soundBtn = document.getElementById('soundBtn');
+      soundBtn.textContent = soundEnabled ? '🔊 Sound' : '🔇 Sound';
+    }
+    
+    // Event listeners
     document.getElementById('namesInput').addEventListener('input', updateStudents);
-
-    document.getElementById('fileInput').addEventListener('change', function (e) {
+    document.getElementById('spinBtn').addEventListener('click', spin);
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+    document.getElementById('soundBtn').addEventListener('click', toggleSound);
+    
+    // File upload handling
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInput = document.getElementById('fileInput');
+    
+    fileUploadArea.addEventListener('click', () => fileInput.click());
+    
+    fileUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.add('dragover');
+    });
+    
+    fileUploadArea.addEventListener('dragleave', () => {
+      fileUploadArea.classList.remove('dragover');
+    });
+    
+    fileUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileUploadArea.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+    
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+    
+    function handleFile(file) {
       const reader = new FileReader();
-      reader.onload = function () {
+      reader.onload = function() {
         document.getElementById('namesInput').value = reader.result;
         updateStudents();
       };
-      if (e.target.files[0]) {
-        reader.readAsText(e.target.files[0]);
-      }
-    });
-
-    document.body.addEventListener('keydown', function (e) {
-      if (e.code === 'Space') {
+      reader.readAsText(file);
+    }
+    
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !e.target.matches('textarea')) {
         e.preventDefault();
         updateStudents();
         spin();
       }
     });
+    
+    // Initialize
+    updateStudentCount();
   </script>
 </body>
 </html>
