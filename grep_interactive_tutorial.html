@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Linux GREP Tutorial</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+            color: #000;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.8;
+        }
+
+        .penguin {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 60px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(-50%) translateY(0px); }
+            50% { transform: translateY(-50%) translateY(-10px); }
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-bottom-color: #00ff88;
+        }
+
+        .content {
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cheat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .cheat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cheat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .cheat-card h3 {
+            color: #00ff88;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #00ff88;
+            padding-bottom: 10px;
+        }
+
+        .code-block {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            border-left: 4px solid #00ff88;
+            overflow-x: auto;
+        }
+
+        .code-block .command {
+            color: #00ff88;
+        }
+
+        .code-block .comment {
+            color: #888;
+        }
+
+        .simulator {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group textarea, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+            outline: none;
+            border-color: #00ff88;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #00ff88 0%, #00d4aa 100%);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .result {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #00ff88;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .highlight {
+            background: #ffff00;
+            color: #000;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .example-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .example-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .example-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .quiz {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .question {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .option {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .option.correct {
+            background: rgba(0, 255, 136, 0.3);
+        }
+
+        .option.incorrect {
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        .pattern-visualizer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .pattern-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .pattern-display {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+
+        .match {
+            background: rgba(0, 255, 136, 0.3);
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .responsive-table {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        th {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .penguin {
+                display: none;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .cheat-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pattern-input {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Linux GREP Interactive Tutorial</h1>
+            <p>Master the power of pattern searching in Linux</p>
+            <div class="penguin">🐧</div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('cheatsheet')">Cheatsheet</button>
+            <button class="tab" onclick="showTab('simulator')">Interactive Simulator</button>
+            <button class="tab" onclick="showTab('examples')">Real-World Examples</button>
+            <button class="tab" onclick="showTab('visualizer')">Pattern Visualizer</button>
+            <button class="tab" onclick="showTab('quiz')">Knowledge Quiz</button>
+        </div>
+        
+        <div class="content">
+            <!-- Cheatsheet Tab -->
+            <div id="cheatsheet" class="tab-content active">
+                <h2>GREP Command Reference</h2>
+                <div class="cheat-grid">
+                    <div class="cheat-card">
+                        <h3>Basic Usage</h3>
+                        <div class="code-block">
+<span class="command">grep [OPTION] PATTERN [FILE...]</span>
+<span class="comment"># Search for pattern in files</span>
+
+<span class="command">grep "error" logfile.txt</span>
+<span class="comment"># Find lines containing "error"</span>
+
+<span class="command">grep -i "Error" logfile.txt</span>
+<span class="comment"># Case insensitive search</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cheat-card">
+                        <h3>Common Options</h3>
+                        <div class="code-block">
+<span class="command">-i</span> <span class="comment"># Ignore case</span>
+<span class="command">-v</span> <span class="comment"># Invert match (show non-matching)</span>
+<span class="command">-n</span> <span class="comment"># Show line numbers</span>
+<span class="command">-c</span> <span class="comment"># Count matches</span>
+<span class="command">-l</span> <span class="comment"># List filenames with matches</span>
+<span class="command">-r</span> <span class="comment"># Recursive search</span>
+<span class="command">-E</span> <span class="comment"># Extended regex (ERE)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cheat-card">
+                        <h3>Wildcards & Quantifiers</h3>
+                        <div class="code-block">
+<span class="command">.</span>    <span class="comment"># Any single character</span>
+<span class="command">*</span>    <span class="comment"># Zero or more of preceding</span>
+<span class="command">+</span>    <span class="comment"># One or more of preceding</span>
+<span class="command">?</span>    <span class="comment"># Zero or one of preceding</span>
+<span class="command">{n}</span>  <span class="comment"># Exactly n times</span>
+<span class="command">{n,}</span> <span class="comment"># n or more times</span>
+<span class="command">{n,m}</span><span class="comment"># Between n and m times</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cheat-card">
+                        <h3>Position Anchors</h3>
+                        <div class="code-block">
+<span class="command">^</span>    <span class="comment"># Beginning of line</span>
+<span class="command">$</span>    <span class="comment"># End of line</span>
+<span class="command">\&lt;</span>   <span class="comment"># Start of word</span>
+<span class="command">\&gt;</span>   <span class="comment"># End of word</span>
+<span class="command">\b</span>   <span class="comment"># Word boundary</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cheat-card">
+                        <h3>Character Classes</h3>
+                        <div class="code-block">
+<span class="command">[abc]</span>     <span class="comment"># Any of a, b, or c</span>
+<span class="command">[a-z]</span>     <span class="comment"># Any lowercase letter</span>
+<span class="command">[A-Z]</span>     <span class="comment"># Any uppercase letter</span>
+<span class="command">[0-9]</span>     <span class="comment"># Any digit</span>
+<span class="command">[^abc]</span>    <span class="comment"># NOT a, b, or c</span>
+<span class="command">[:alpha:]</span> <span class="comment"># Alphabetic characters</span>
+<span class="command">[:digit:]</span> <span class="comment"># Numeric characters</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cheat-card">
+                        <h3>Security & Networking Use Cases</h3>
+                        <div class="code-block">
+<span class="command">grep "Failed password" /var/log/auth.log</span>
+<span class="comment"># Find failed login attempts</span>
+
+<span class="command">grep -E "ERROR|FATAL" app.log</span>
+<span class="comment"># Find errors in application logs</span>
+
+<span class="command">netstat -an | grep ":80 "</span>
+<span class="comment"># Check port 80 connections</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simulator Tab -->
+            <div id="simulator" class="tab-content">
+                <h2>Interactive GREP Simulator</h2>
+                <div class="simulator">
+                    <div class="input-group">
+                        <label>Sample Text Data:</label>
+                        <textarea id="sampleText" rows="10">user1:x:1001:1001:John Doe:/home/user1:/bin/bash
+user2:x:1002:1002:Jane Smith:/home/user2:/bin/bash
+admin:x:0:0:Administrator:/root:/bin/bash
+Failed password for user1 from 192.168.1.100 port 22 ssh2
+Accepted password for admin from 192.168.1.50 port 22 ssh2
+Connection from 10.0.0.15 port 80
+ERROR: Database connection failed
+WARNING: High memory usage detected
+INFO: Service started successfully
+FATAL: System shutdown initiated</textarea>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>GREP Pattern:</label>
+                        <input type="text" id="grepPattern" placeholder="Enter your grep pattern (e.g., Failed|ERROR)" value="user">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Options:</label>
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <label><input type="checkbox" id="optCase"> -i (ignore case)</label>
+                            <label><input type="checkbox" id="optInvert"> -v (invert match)</label>
+                            <label><input type="checkbox" id="optNumbers"> -n (line numbers)</label>
+                            <label><input type="checkbox" id="optCount"> -c (count only)</label>
+                            <label><input type="checkbox" id="optExtended" checked> -E (extended regex)</label>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="runGrep()">Run GREP</button>
+                    <button class="btn" onclick="loadExample('security')">Load Security Example</button>
+                    <button class="btn" onclick="loadExample('network')">Load Network Example</button>
+                    
+                    <div class="result" id="grepResult">Results will appear here...</div>
+                </div>
+            </div>
+            
+            <!-- Examples Tab -->
+            <div id="examples" class="tab-content">
+                <h2>Real-World Examples for IT Students</h2>
+                
+                <div class="example-grid">
+                    <div class="example-card" onclick="loadExample('logs')">
+                        <h3>🔍 Log Analysis</h3>
+                        <p>Search system logs for errors, failed logins, and security events</p>
+                        <div class="code-block">grep -i "error\|fail" /var/log/messages</div>
+                    </div>
+                    
+                    <div class="example-card" onclick="loadExample('network')">
+                        <h3>🌐 Network Monitoring</h3>
+                        <p>Monitor network connections and identify suspicious activity</p>
+                        <div class="code-block">netstat -an | grep ":22\|:80\|:443"</div>
+                    </div>
+                    
+                    <div class="example-card" onclick="loadExample('security')">
+                        <h3>🔒 Security Auditing</h3>
+                        <p>Find failed authentication attempts and security breaches</p>
+                        <div class="code-block">grep "Failed password" /var/log/auth.log</div>
+                    </div>
+                    
+                    <div class="example-card" onclick="loadExample('config')">
+                        <h3>⚙️ Configuration Files</h3>
+                        <p>Search configuration files for specific settings</p>
+                        <div class="code-block">grep -r "^Port\|^Listen" /etc/</div>
+                    </div>
+                    
+                    <div class="example-card" onclick="loadExample('processes')">
+                        <h3>💻 Process Management</h3>
+                        <p>Find specific processes and their resource usage</p>
+                        <div class="code-block">ps aux | grep -v grep | grep apache</div>
+                    </div>
+                    
+                    <div class="example-card" onclick="loadExample('ipaddress')">
+                        <h3>🔢 IP Address Validation</h3>
+                        <p>Extract and validate IP addresses from logs</p>
+                        <div class="code-block">grep -E "\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b"</div>
+                    </div>
+                </div>
+                
+                <div class="responsive-table">
+                    <h3>Common Patterns for IT Professionals</h3>
+                    <table>
+                        <tr>
+                            <th>Use Case</th>
+                            <th>Pattern</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td>Email Addresses</td>
+                            <td>[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}</td>
+                            <td>Match valid email formats</td>
+                        </tr>
+                        <tr>
+                            <td>IP Addresses</td>
+                            <td>\b([0-9]{1,3}\.){3}[0-9]{1,3}\b</td>
+                            <td>Match IPv4 addresses</td>
+                        </tr>
+                        <tr>
+                            <td>MAC Addresses</td>
+                            <td>([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})</td>
+                            <td>Match MAC address formats</td>
+                        </tr>
+                        <tr>
+                            <td>URLs</td>
+                            <td>https?://[^\s]+</td>
+                            <td>Match HTTP/HTTPS URLs</td>
+                        </tr>
+                        <tr>
+                            <td>Port Numbers</td>
+                            <td>:(6[0-5][0-5][0-3][0-5]|[1-5][0-9]{4}|[1-9][0-9]{0,3})</td>
+                            <td>Match valid port ranges</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Pattern Visualizer Tab -->
+            <div id="visualizer" class="tab-content">
+                <h2>Pattern Visualizer</h2>
+                <div class="pattern-visualizer">
+                    <div class="pattern-input">
+                        <input type="text" id="vizPattern" placeholder="Enter regex pattern" value="[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}">
+                        <button class="btn" onclick="visualizePattern()">Visualize</button>
+                        <button class="btn" onclick="loadPatternExample('email')">Email Pattern</button>
+                        <button class="btn" onclick="loadPatternExample('ip')">IP Pattern</button>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Test Text:</label>
+                        <textarea id="vizText" rows="8">Server IP: 192.168.1.100
+Client connected from 10.0.0.15
+Email: admin@example.com
+Invalid IP: 999.999.999.999
+Contact: user@domain.org
+Another IP: 172.16.0.1</textarea>
+                    </div>
+                    
+                    <div class="pattern-display" id="vizResult">
+                        Pattern matches will be highlighted here...
+                    </div>
+                    
+                    <div id="patternExplanation">
+                        <h3>Pattern Breakdown:</h3>
+                        <div id="explanation">Enter a pattern to see its explanation</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quiz Tab -->
+            <div id="quiz" class="tab-content">
+                <h2>Test Your GREP Knowledge</h2>
+                <div class="quiz">
+                    <div class="question">
+                        <h3>Question 1: Which option makes grep case-insensitive?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) -v</div>
+                            <div class="option" onclick="selectAnswer(this, true)">b) -i</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) -n</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) -c</div>
+                        </div>
+                    </div>
+                    
+                    <div class="question">
+                        <h3>Question 2: What does the pattern "^Error" match?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) Any line containing "Error"</div>
+                            <div class="option" onclick="selectAnswer(this, true)">b) Lines beginning with "Error"</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) Lines ending with "Error"</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) The word "Error" only</div>
+                        </div>
+                    </div>
+                    
+                    <div class="question">
+                        <h3>Question 3: Which command finds failed SSH login attempts?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) grep "ssh" /var/log/auth.log</div>
+                            <div class="option" onclick="selectAnswer(this, true)">b) grep "Failed password" /var/log/auth.log</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) grep "login" /var/log/auth.log</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) grep -v "Accepted" /var/log/auth.log</div>
+                        </div>
+                    </div>
+                    
+                    <div class="question">
+                        <h3>Question 4: What does [0-9]{3} match?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) Any three characters</div>
+                            <div class="option" onclick="selectAnswer(this, true)">b) Exactly three digits</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) Up to three digits</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) Three or more digits</div>
+                        </div>
+                    </div>
+                    
+                    <div class="question">
+                        <h3>Question 5: Which option recursively searches directories?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) -l</div>
+                            <div class="option" onclick="selectAnswer(this, true)">b) -r</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) -n</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) -E</div>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <h3>Question 6: What does the pattern "log$" match?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, true)">a) Lines ending with "log"</div>
+                            <div class="option" onclick="selectAnswer(this, false)">b) Lines containing "log"</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) Lines beginning with "log"</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) The word "log" followed by a dollar sign</div>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <h3>Question 7: Which command counts the number of lines containing "ERROR" in a file?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) grep -n "ERROR" file.txt</div>
+                            <div class="option" onclick="selectAnswer(this, false)">b) grep -l "ERROR" file.txt</div>
+                            <div class="option" onclick="selectAnswer(this, true)">c) grep -c "ERROR" file.txt</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) grep -v "ERROR" file.txt</div>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <h3>Question 8: What does the character class [^0-9] match?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) Any digit from 0 to 9</div>
+                            <div class="option" onclick="selectAnswer(this, false)">b) Numbers from 0 to 9</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) The characters 0 through 9</div>
+                            <div class="option" onclick="selectAnswer(this, true)">d) Any character that is NOT a digit</div>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <h3>Question 9: Which command finds all IP addresses in a log file?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, true)">a) grep -E "\b[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\b" logfile</div>
+                            <div class="option" onclick="selectAnswer(this, false)">b) grep "192.168" logfile</div>
+                            <div class="option" onclick="selectAnswer(this, false)">c) grep "[0-9]" logfile</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) grep -i "ip" logfile</div>
+                        </div>
+                    </div>
+
+                    <div class="question">
+                        <h3>Question 10: What does the -v option do in grep?</h3>
+                        <div class="options">
+                            <div class="option" onclick="selectAnswer(this, false)">a) Shows version information</div>
+                            <div class="option" onclick="selectAnswer(this, false)">b) Enables verbose mode</div>
+                            <div class="option" onclick="selectAnswer(this, true)">c) Inverts the match (shows non-matching lines)</div>
+                            <div class="option" onclick="selectAnswer(this, false)">d) Validates the pattern syntax</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn" onclick="showQuizResults()">Check Results</button>
+                    <div id="quizResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let quizAnswers = [];
+        
+        function showTab(tabName) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
+        }
+        
+        function runGrep() {
+            const text = document.getElementById('sampleText').value;
+            const pattern = document.getElementById('grepPattern').value;
+            const ignoreCase = document.getElementById('optCase').checked;
+            const invert = document.getElementById('optInvert').checked;
+            const showNumbers = document.getElementById('optNumbers').checked;
+            const countOnly = document.getElementById('optCount').checked;
+            const extended = document.getElementById('optExtended').checked;
+            
+            if (!pattern) {
+                document.getElementById('grepResult').textContent = 'Please enter a pattern';
+                return;
+            }
+            
+            const lines = text.split('\n');
+            let result = [];
+            let lineNumber = 1;
+            let matchCount = 0;
+            
+            try {
+                const flags = ignoreCase ? 'gi' : 'g';
+                const regex = new RegExp(pattern, flags);
+                
+                lines.forEach(line => {
+                    const matches = regex.test(line);
+                    
+                    if ((matches && !invert) || (!matches && invert)) {
+                        matchCount++;
+                        if (!countOnly) {
+                            let displayLine = line;
+                            if (!invert && ignoreCase) {
+                                displayLine = line.replace(new RegExp(pattern, 'gi'), match => 
+                                    `<span class="highlight">${match}</span>`);
+                            } else if (!invert && !ignoreCase) {
+                                displayLine = line.replace(new RegExp(pattern, 'g'), match => 
+                                    `<span class="highlight">${match}</span>`);
+                            }
+                            
+                            if (showNumbers) {
+                                result.push(`${lineNumber}: ${displayLine}`);
+                            } else {
+                                result.push(displayLine);
+                            }
+                        }
+                    }
+                    lineNumber++;
+                });
+                
+                if (countOnly) {
+                    document.getElementById('grepResult').textContent = matchCount.toString();
+                } else if (result.length === 0) {
+                    document.getElementById('grepResult').textContent = 'No matches found';
+                } else {
+                    document.getElementById('grepResult').innerHTML = result.join('\n');
+                }
+                
+            } catch (e) {
+                document.getElementById('grepResult').textContent = `Invalid regex pattern: ${e.message}`;
+            }
+        }
+        
+        function loadExample(type) {
+            const examples = {
+                security: {
+                    text: `Jan 15 10:30:45 server sshd[1234]: Failed password for root from 192.168.1.100 port 22 ssh2
+Jan 15 10:31:02 server sshd[1235]: Accepted password for admin from 192.168.1.50 port 22 ssh2
+Jan 15 10:31:15 server sshd[1236]: Failed password for user1 from 192.168.1.100 port 22 ssh2
+Jan 15 10:32:01 server sshd[1237]: Failed password for admin from 10.0.0.15 port 22 ssh2
+Jan 15 10:32:30 server sshd[1238]: Accepted publickey for deploy from 192.168.1.25 port 22 ssh2`,
+                    pattern: 'Failed password'
+                },
+                network: {
+                    text: `tcp        0      0 0.0.0.0:22              0.0.0.0:*               LISTEN
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN  
+tcp        0      0 0.0.0.0:443             0.0.0.0:*               LISTEN
+tcp        0      0 192.168.1.100:22        192.168.1.50:45234      ESTABLISHED
+tcp        0      0 192.168.1.100:80        10.0.0.15:54321         ESTABLISHED
+udp        0      0 0.0.0.0:53              0.0.0.0:*`,
+                    pattern: ':80|:443|:22'
+                },
+                logs: {
+                    text: `2024-01-15 10:30:01 INFO: Application started
+2024-01-15 10:30:15 ERROR: Database connection failed
+2024-01-15 10:30:30 WARNING: High memory usage detected
+2024-01-15 10:31:00 ERROR: Unable to process request
+2024-01-15 10:31:30 FATAL: System shutdown initiated
+2024-01-15 10:32:00 INFO: Backup completed successfully`,
+                    pattern: 'ERROR|FATAL'
+                }
+            };
+            
+            if (examples[type]) {
+                document.getElementById('sampleText').value = examples[type].text;
+                document.getElementById('grepPattern').value = examples[type].pattern;
+                document.getElementById('optExtended').checked = true;
+                runGrep();
+            }
+        }
+        
+        function visualizePattern() {
+            const pattern = document.getElementById('vizPattern').value;
+            const text = document.getElementById('vizText').value;
+            
+            if (!pattern) {
+                document.getElementById('vizResult').textContent = 'Please enter a pattern';
+                return;
+            }
+            
+            try {
+                const regex = new RegExp(pattern, 'g');
+                const highlightedText = text.replace(regex, match => 
+                    `<span class="match">${match}</span>`);
+                
+                document.getElementById('vizResult').innerHTML = highlightedText;
+                explainPattern(pattern);
+                
+            } catch (e) {
+                document.getElementById('vizResult').textContent = `Invalid pattern: ${e.message}`;
+            }
+        }
+        
+        function explainPattern(pattern) {
+            const explanations = {
+                '[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}': 'Matches IPv4 addresses: 1-3 digits, dot, 1-3 digits, dot, 1-3 digits, dot, 1-3 digits',
+                '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}': 'Matches email addresses: username characters, @, domain characters, dot, 2+ letter extension',
+                '^Error': 'Matches lines that begin with "Error"',
+                'Error$': 'Matches lines that end with "Error"',
+                '\\b[0-9]+\\b': 'Matches whole numbers (word boundaries ensure complete numbers)',
+                'https?://[^\\s]+': 'Matches HTTP/HTTPS URLs: http or https, ://, followed by non-whitespace characters'
+            };
+            
+            let explanation = explanations[pattern] || 'Custom pattern - analyze the components:';
+            
+            if (!explanations[pattern]) {
+                explanation += '<br>';
+                if (pattern.includes('^')) explanation += '• ^ = Start of line<br>';
+                if (pattern.includes('$')) explanation += '• $ = End of line<br>';
+                if (pattern.includes('[0-9]')) explanation += '• [0-9] = Any digit<br>';
+                if (pattern.includes('[a-z]')) explanation += '• [a-z] = Any lowercase letter<br>';
+                if (pattern.includes('[A-Z]')) explanation += '• [A-Z] = Any uppercase letter<br>';
+                if (pattern.includes('+')) explanation += '• + = One or more of preceding<br>';
+                if (pattern.includes('*')) explanation += '• * = Zero or more of preceding<br>';
+                if (pattern.includes('.')) explanation += '• . = Any single character<br>';
+                if (pattern.includes('\\b')) explanation += '• \\b = Word boundary<br>';
+            }
+            
+            document.getElementById('explanation').innerHTML = explanation;
+        }
+        
+        function loadPatternExample(type) {
+            const patterns = {
+                email: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}',
+                ip: '[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}',
+                url: 'https?://[^\\s]+',
+                phone: '\\([0-9]{3}\\) [0-9]{3}-[0-9]{4}',
+                mac: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+            };
+            
+            if (patterns[type]) {
+                document.getElementById('vizPattern').value = patterns[type];
+                visualizePattern();
+            }
+        }
+        
+        function selectAnswer(element, isCorrect) {
+            const options = element.parentNode.querySelectorAll('.option');
+            options.forEach(opt => {
+                opt.classList.remove('correct', 'incorrect');
+            });
+            
+            if (isCorrect) {
+                element.classList.add('correct');
+            } else {
+                element.classList.add('incorrect');
+                // Also highlight the correct answer
+                options.forEach(opt => {
+                    if (opt.onclick.toString().includes('true')) {
+                        opt.classList.add('correct');
+                    }
+                });
+            }
+            
+            // Store the answer
+            const questionIndex = Array.from(element.closest('.quiz').querySelectorAll('.question')).indexOf(element.closest('.question'));
+            quizAnswers[questionIndex] = isCorrect;
+        }
+        
+        function showQuizResults() {
+            const correctAnswers = quizAnswers.filter(answer => answer === true).length;
+            const totalQuestions = 10;
+            const percentage = Math.round((correctAnswers / totalQuestions) * 100);
+            
+            let message = `You scored ${correctAnswers}/${totalQuestions} (${percentage}%)`;
+            
+            if (percentage >= 80) {
+                message += " - Excellent! You're a GREP master! 🎉";
+            } else if (percentage >= 60) {
+                message += " - Good job! Review the examples for improvement. 👍";
+            } else {
+                message += " - Keep practicing with the simulator and examples. 📚";
+            }
+            
+            document.getElementById('quizResults').innerHTML = `<div class="result">${message}</div>`;
+        }
+        
+        // Initialize the simulator with a simple example
+        window.onload = function() {
+            runGrep();
+        };
+    </script>
+</body>
+</html>
