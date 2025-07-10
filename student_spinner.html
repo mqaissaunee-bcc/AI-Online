@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Spinner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4a5568;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .load-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s;
+        }
+
+        .load-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .spinner-section {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+
+        .spinner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 8px solid #e2e8f0;
+            position: relative;
+            background: conic-gradient(from 0deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57, #ff9ff3, #54a0ff, #5f27cd);
+            transition: transform 0.1s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner.spinning {
+            animation: spin 3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(1440deg); }
+        }
+
+        .spinner-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 20px solid #333;
+            z-index: 10;
+        }
+
+        .selected-student {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 2em;
+            font-weight: bold;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .student-count {
+            text-align: center;
+            color: #666;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .spin-button {
+            background: linear-gradient(135deg, #48bb78, #38a169);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+        }
+
+        .spin-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .spin-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Student Spinner</h1>
+        
+        <div class="input-section">
+            <label for="studentNames">Enter student names (one per line or separated by commas):</label>
+            <textarea id="studentNames" placeholder="John Smith
+Jane Doe
+Mike Johnson
+Sarah Davis"></textarea>
+            <button class="load-button" onclick="loadStudents()">Load Students</button>
+        </div>
+
+        <div class="student-count" id="studentCount">No students loaded</div>
+
+        <div class="spinner-section">
+            <div class="spinner-container">
+                <div class="spinner-pointer"></div>
+                <div class="spinner" id="spinner">
+                    <div style="font-size: 1.5em; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                        Ready to Spin!
+                    </div>
+                </div>
+            </div>
+            
+            <button class="spin-button" id="spinButton" onclick="spin()" disabled>
+                Click to Spin (or press Spacebar)
+            </button>
+        </div>
+
+        <div class="selected-student" id="selectedStudent">
+            Select students and press spin!
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <p>• Paste or type student names in the text area above (first and last names)</p>
+            <p>• Click "Load Students" to process the names</p>
+            <p>• Press <strong>Spacebar</strong> or click the spin button to randomly select a student</p>
+            <p>• If multiple students have the same first name, the last initial will be added automatically</p>
+        </div>
+    </div>
+
+    <script>
+        let students = [];
+        let isSpinning = false;
+
+        function processNames(nameList) {
+            // Parse names and create display names
+            const names = nameList
+                .split(/[\n,]/)
+                .map(name => name.trim())
+                .filter(name => name.length > 0);
+
+            const processed = names.map(fullName => {
+                const parts = fullName.trim().split(/\s+/);
+                const firstName = parts[0];
+                const lastName = parts.length > 1 ? parts[parts.length - 1] : '';
+                return { firstName, lastName, fullName };
+            });
+
+            // Handle duplicate first names
+            const firstNameCounts = {};
+            processed.forEach(student => {
+                firstNameCounts[student.firstName] = (firstNameCounts[student.firstName] || 0) + 1;
+            });
+
+            return processed.map(student => {
+                let displayName = student.firstName;
+                if (firstNameCounts[student.firstName] > 1 && student.lastName) {
+                    displayName += ' ' + student.lastName.charAt(0).toUpperCase() + '.';
+                }
+                return {
+                    ...student,
+                    displayName
+                };
+            });
+        }
+
+        function loadStudents() {
+            const input = document.getElementById('studentNames').value;
+            if (!input.trim()) {
+                alert('Please enter some student names first!');
+                return;
+            }
+
+            students = processNames(input);
+            
+            if (students.length === 0) {
+                alert('No valid names found. Please check your input.');
+                return;
+            }
+
+            document.getElementById('studentCount').textContent = `${students.length} student${students.length === 1 ? '' : 's'} loaded`;
+            document.getElementById('spinButton').disabled = false;
+            document.getElementById('selectedStudent').textContent = 'Ready to spin!';
+            
+            // Update spinner display
+            document.getElementById('spinner').innerHTML = '<div style="font-size: 1.5em; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Ready to Spin!</div>';
+        }
+
+        function spin() {
+            if (isSpinning || students.length === 0) return;
+
+            isSpinning = true;
+            document.getElementById('spinButton').disabled = true;
+
+            const spinner = document.getElementById('spinner');
+            const selectedStudentDiv = document.getElementById('selectedStudent');
+
+            // Add spinning animation
+            spinner.classList.add('spinning');
+            selectedStudentDiv.textContent = 'Spinning...';
+
+            // Simulate spinning with random selections
+            let spins = 0;
+            const maxSpins = 20;
+            const spinInterval = setInterval(() => {
+                const randomStudent = students[Math.floor(Math.random() * students.length)];
+                selectedStudentDiv.textContent = randomStudent.displayName;
+                spins++;
+
+                if (spins >= maxSpins) {
+                    clearInterval(spinInterval);
+                }
+            }, 100);
+
+            // Final selection after animation
+            setTimeout(() => {
+                const finalStudent = students[Math.floor(Math.random() * students.length)];
+                selectedStudentDiv.textContent = finalStudent.displayName;
+                
+                spinner.classList.remove('spinning');
+                isSpinning = false;
+                document.getElementById('spinButton').disabled = false;
+            }, 3000);
+        }
+
+        // Spacebar event listener
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !isSpinning && students.length > 0) {
+                event.preventDefault(); // Prevent page scroll
+                spin();
+            }
+        });
+
+        // Load sample data on page load
+        window.onload = function() {
+            document.getElementById('studentNames').value = `John Smith
+Jane Doe
+Mike Johnson
+Sarah Davis
+Alex Thompson
+Emma Wilson
+Chris Lee
+Ashley Brown
+John Davis
+Sarah Miller`;
+        };
+    </script>
+</body>
+</html>
