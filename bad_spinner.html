@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Spinner</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: #f4f4f4;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    textarea {
+      width: 80%;
+      height: 100px;
+      margin: 1rem 0;
+      padding: 0.5rem;
+    }
+    #spinner {
+      margin-top: 2rem;
+      font-size: 3rem;
+      font-weight: bold;
+      color: #2c3e50;
+      min-height: 3rem;
+      transition: transform 0.4s ease;
+    }
+    .spin {
+      animation: spinAnim 0.5s ease;
+    }
+    @keyframes spinAnim {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(15deg); }
+      100% { transform: rotate(0deg); }
+    }
+    input[type="file"] {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎯 Student Spinner</h1>
+  <p>Paste or upload names (one per line). Hit <b>Space</b> to spin.</p>
+
+  <textarea id="namesInput" placeholder="e.g. John Doe&#10;Jane Smith"></textarea><br>
+  <input type="file" id="fileInput" accept=".txt"><br>
+
+  <div id="spinner">—</div>
+
+  <script>
+    let students = [];
+
+    function parseNames(raw) {
+      const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+      const counts = {};
+      const formatted = lines.map(name => {
+        const parts = name.split(' ');
+        const first = parts[0];
+        const lastInitial = parts[1] ? parts[1][0].toUpperCase() + '.' : '';
+        const key = first.toLowerCase();
+
+        counts[key] = (counts[key] || 0) + 1;
+
+        return { raw: name, first, lastInitial };
+      });
+
+      return formatted.map(entry => {
+        const key = entry.first.toLowerCase();
+        return counts[key] > 1 ? `${entry.first} ${entry.lastInitial}` : entry.first;
+      });
+    }
+
+    function updateStudents() {
+      const raw = document.getElementById('namesInput').value;
+      students = parseNames(raw);
+    }
+
+    function spin() {
+      if (students.length === 0) return;
+      const spinner = document.getElementById('spinner');
+      const name = students[Math.floor(Math.random() * students.length)];
+      spinner.classList.remove('spin');
+      void spinner.offsetWidth;
+      spinner.textContent = name;
+      spinner.classList.add('spin');
+    }
+
+    document.getElementById('namesInput').addEventListener('input', updateStudents);
+
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        document.getElementById('namesInput').value = reader.result;
+        updateStudents();
+      };
+      if (e.target.files[0]) {
+        reader.readAsText(e.target.files[0]);
+      }
+    });
+
+    document.body.addEventListener('keydown', function (e) {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        updateStudents();
+        spin();
+      }
+    });
+  </script>
+</body>
+</html>
